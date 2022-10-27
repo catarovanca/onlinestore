@@ -1,0 +1,87 @@
+version: '3.8'
+services:
+    ##################################################
+    # PostgreSQL related services
+    ##################################################
+    postgressqldb:
+      container_name: postgresql_db
+      build: 
+        context: ./postgresql
+        dockerfile: postgresql.dockerfile
+      ports:
+        - 5432:5432
+      networks:
+        - onlineStore
+      volumes:
+        - /Users/catarovanca/docker_data/pgdata:/var/lib/postgresql/data/
+    pgadmin:
+      container_name: pgadmin_container
+      build:
+        context: ./postgresql
+        dockerfile: pgadmin.dockerfile
+      ports:
+        - 5050:5050
+      networks:
+        - onlineStore
+      volumes:
+        - /Users/catarovanca/docker_data/pgadmin:/var/lib/pgadmin
+
+    ##################################################
+    # Redis related services
+    ##################################################
+    redisdb:
+      container_name: redis_db
+      build:
+        context: ./redis
+        dockerfile: redis.dockerfile
+      ports:
+        - 6379:6379
+      networks:
+        - onlineStore
+      volumes:
+        - /Users/catarovanca/docker_data/redisdata:/data
+    redisinsight:
+      container_name: redis_insight
+      build:
+        context: ./redis
+        dockerfile: redisinsight.dockerfile
+      ports:
+        - 8001:8001
+      depends_on:
+       - redisdb
+      networks:
+        - onlineStore
+
+    ##################################################
+    # Mongo related services
+    ##################################################
+    mongodb:
+      container_name: mongo_db
+      build:
+        context: ./mongo
+        dockerfile: mongodb.dockerfile
+      ports:
+        - 27017:27017
+      volumes:
+        - /Users/catarovanca/docker_data/mongodata:/data/db
+      networks:
+        - onlineStore
+  
+    mongoexpress: 
+      container_name: mongoexpress
+      build:
+        context: ./mongo
+        dockerfile: mongoexpress.dockerfile
+      networks:
+        - onlineStore
+      ports:
+        - 8081:8081
+      environment:
+        ME_CONFIG_MONGODB_SERVER: mongodb
+        ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
+      depends_on:
+       - mongodb
+       
+networks:
+  onlineStore: 
+    name: onlineStore
